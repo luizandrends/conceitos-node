@@ -1,7 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const {uuid} = require('uuidv4')
-const { request } = require('express')
 
 const routes = express()
 
@@ -9,6 +8,16 @@ routes.use(express.json())
 routes.use(cors())
 
 const beers = []
+
+function beerMiddleware(request, response, next) {
+  const { name } = request.body
+
+  if(name === 'heineken') {
+    return response.status(401).json({ error: 'You cannot update a good beer' })
+  }
+
+  return next();
+}
 
 routes.get('/beers/list', (request, response) => {
   return response.json(beers)
@@ -24,7 +33,7 @@ routes.post('/beers/create', (request, response) => {
   return response.json(beer)
 })
 
-routes.put('/beers/update/:id', (request, response) => {
+routes.put('/beers/update/:id', beerMiddleware, (request, response) => {
   const { id } = request.params
   const { name, category, alcohol } = request.body
 
